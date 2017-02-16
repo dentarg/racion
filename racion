@@ -1,0 +1,138 @@
+#!/usr/bin/env python
+
+# coding: utf-8
+
+from bs4 import BeautifulSoup
+import argparse
+import logging
+import os
+import random
+import re
+import requests
+import string
+import sys
+
+class Episode:
+    pattern = re.compile(
+        "http.*\/episode-(?P<number>\d{3,})[-\/](?P<title>[^\/]*)")
+
+    def __init__(self, video_page_url):
+        match = re.match(self.pattern, video_page_url)
+
+        if match:
+            self.number = int(match.group("number"))
+            self.title = match.group("title")
+            self.video_page_url = video_page_url
+
+class EpisodeList:
+    def __init__(self, urls):
+        episode_urls = filter(lambda url:
+            re.match(Episode.pattern, url), urls)
+        self.episodes = map(lambda url: Episode(url), episode_urls)
+
+    def filter(self, ep_start, ep_end):
+        ep_range = range(ep_start, ep_end + 1)
+        return filter(lambda ep: ep.number in ep_range, self.episodes)
+
+def episode_urls():
+    video_list_url = "https://www.rubytapas.com/episode-list/"
+    response = requests.get(video_list_url)
+
+    # workaround ISO-8859-1 charset fallback in requests
+    # https://github.com/kennethreitz/requests/issues/2086
+    if "charset" in response.headers["Content-Type"]:
+        possible_encoding = response.encoding
+    else:
+        possible_encoding = False
+
+    soup = BeautifulSoup(response.content, "html5lib",
+        from_encoding=possible_encoding)
+    urls = map(lambda a: a.get("href"), soup.find_all("a"))
+
+    return urls
+
+def randomword(length):
+   return "".join(random.choice(string.lowercase) for i in range(length))
+
+def login(username, password):
+    url = "https://www.rubytapas.com/login/"
+    get_response = requests.get(url)
+
+    logging.debug("%s GET %s", get_response.status_code, url)
+
+    login_url = "https://www.rubytapas.com/login/"
+    headers = {
+        "Referer": url,
+        "Cookie": "PHPSESSID=%s" % randomword(22),
+    }
+    payload = {
+        "log": username,
+        "pwd": password,
+        "rememberme": "forever",
+        "wp-submit": "Log In",
+        "redirect_to": "https://www.rubytapas.com",
+        "mepr_process_login_form": "true",
+        "mepr_is_login_page": "true",
+    }
+
+    login_response = requests.post(login_url,
+        data=payload,
+        headers=headers,
+        allow_redirects=False
+    )
+
+    logging.debug("%s POST %s", login_response.status_code, login_url)
+
+    return login_response
+
+def video_url(video_page_url, cookies):
+    video_response = requests.get(video_page_url, cookies=cookies)
+
+    logging.debug("%s GET %s", video_response.status_code, video_page_url)
+
+    soup = response_to_soup(video_response)
+    link = soup.find("a", class_="mepr-aws-link").get("href")
+
+    return link
+
+def response_to_soup(response):
+    # workaround ISO-8859-1 charset fallback in requests
+    # https://github.com/kennethreitz/requests/issues/2086
+    if "charset" in response.headers["Content-Type"]:
+        possible_encoding = response.encoding
+    else:
+        possible_encoding = False
+
+    return BeautifulSoup(response.content, "html5lib",
+        from_encoding=possible_encoding)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("start", help="start with this episode", type=int)
+    parser.add_argument("end", help="upto and including this episode", type=int)
+    parser.add_argument("--videourls", help="list video URLs for episodes",
+        action="store_true")
+    parser.add_argument("--log", help="log level", default="INFO")
+    args = parser.parse_args()
+
+    loglevel = args.log
+    numeric_level = getattr(logging, loglevel.upper(), None)
+    if not isinstance(numeric_level, int):
+        raise ValueError('Invalid log level: %s' % loglevel)
+
+    logging.basicConfig(level=numeric_level)
+
+    username = os.environ["RUBYTAPAS_USERNAME"]
+    password = os.environ["RUBYTAPAS_PASSWORD"]
+
+    cookies = login(username, password).cookies
+
+    episode_urls = episode_urls()
+    episode_list = EpisodeList(episode_urls)
+
+    for episode in episode_list.filter(args.start, args.end):
+        if args.videourls:
+            print video_url(episode.video_page_url, cookies)
+        else:
+            print "%s: %s" % (episode.number, episode.title)
