@@ -1,4 +1,4 @@
-# racion
+# [ración](https://en.wiktionary.org/wiki/raci%C3%B3n)
 
 Python script to list the video URL for [Ruby Tapas](https://www.rubytapas.com/) episodes.
 
