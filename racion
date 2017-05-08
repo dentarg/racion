@@ -34,9 +34,15 @@ class EpisodeList:
         ep_range = range(ep_start, ep_end + 1)
         return filter(lambda ep: ep.number in ep_range, self.episodes)
 
-def episode_urls():
-    video_list_url = "https://www.rubytapas.com/episode-list/"
-    response = requests.get(video_list_url)
+def get_request(url, cookies={}):
+    response = requests.get(url, cookies=cookies)
+
+    logging.debug("%s GET %s", response.status_code, url)
+
+    return response
+
+def fetch_html_soup(url, cookies={}):
+    response = get_request(url, cookies)
 
     # workaround ISO-8859-1 charset fallback in requests
     # https://github.com/kennethreitz/requests/issues/2086
@@ -45,8 +51,12 @@ def episode_urls():
     else:
         possible_encoding = False
 
-    soup = BeautifulSoup(response.content, "html5lib",
+    return BeautifulSoup(response.content, "html5lib",
         from_encoding=possible_encoding)
+
+def episode_urls():
+    video_list_url = "https://www.rubytapas.com/episode-list/"
+    soup = fetch_html_soup(video_list_url)
     urls = map(lambda a: a.get("href"), soup.find_all("a"))
 
     return urls
@@ -55,14 +65,12 @@ def randomword(length):
    return "".join(random.choice(string.lowercase) for i in range(length))
 
 def login(username, password):
-    url = "https://www.rubytapas.com/login/"
-    get_response = requests.get(url)
-
-    logging.debug("%s GET %s", get_response.status_code, url)
-
     login_url = "https://www.rubytapas.com/login/"
+
+    get_request(login_url)
+
     headers = {
-        "Referer": url,
+        "Referer": login_url,
         "Cookie": "PHPSESSID=%s" % randomword(22),
     }
     payload = {
@@ -86,26 +94,10 @@ def login(username, password):
     return login_response
 
 def video_url(video_page_url, cookies):
-    video_response = requests.get(video_page_url, cookies=cookies)
-
-    logging.debug("%s GET %s", video_response.status_code, video_page_url)
-
-    soup = response_to_soup(video_response)
+    soup = fetch_html_soup(video_page_url, cookies)
     link = soup.find("a", class_="mepr-aws-link").get("href")
 
     return link
-
-def response_to_soup(response):
-    # workaround ISO-8859-1 charset fallback in requests
-    # https://github.com/kennethreitz/requests/issues/2086
-    if "charset" in response.headers["Content-Type"]:
-        possible_encoding = response.encoding
-    else:
-        possible_encoding = False
-
-    return BeautifulSoup(response.content, "html5lib",
-        from_encoding=possible_encoding)
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
