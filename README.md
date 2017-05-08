@@ -31,6 +31,10 @@ Print the episode titles:
 
     ./racion 400 410
 
+If end of range is `0`, all available episodes from given start number is displayed:
+
+    ./racion 460 0
+
 Enable debug logging:
 
     ./racion --log=DEBUG 400 410

@@ -34,6 +34,9 @@ class EpisodeList:
         ep_range = range(ep_start, ep_end + 1)
         return filter(lambda ep: ep.number in ep_range, self.episodes)
 
+    def max(self):
+        return len(self.episodes)
+
 def get_request(url, cookies={}):
     response = requests.get(url, cookies=cookies)
 
@@ -102,7 +105,8 @@ def video_url(video_page_url, cookies):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("start", help="start with this episode", type=int)
-    parser.add_argument("end", help="upto and including this episode", type=int)
+    parser.add_argument("end",
+        help="upto and including this episode (0 = latest episode)", type=int)
     parser.add_argument("--videourls", help="list video URLs for episodes",
         action="store_true")
     parser.add_argument("--log", help="log level", default="INFO")
@@ -123,7 +127,12 @@ if __name__ == "__main__":
     episode_urls = episode_urls()
     episode_list = EpisodeList(episode_urls)
 
-    for episode in episode_list.filter(args.start, args.end):
+    if args.end == 0:
+        end = episode_list.max()
+    else:
+        end = args.end
+
+    for episode in episode_list.filter(args.start, end):
         if args.videourls:
             print video_url(episode.video_page_url, cookies)
         else:
