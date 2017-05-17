@@ -4,9 +4,9 @@ Python script to list the video URL for [Ruby Tapas](https://www.rubytapas.com/)
 
 ## Prerequisites
 
-Install [Requests](http://docs.python-requests.org/en/master/) and [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/).
+Install all dependencies with:
 
-    pip install requests beautifulsoup4
+    pip install -r requirements.txt
 
 `ENV` values required:
 
@@ -42,3 +42,24 @@ Enable debug logging:
 See the help:
 
     ./racion -h
+
+## Development
+
+[Setup](http://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/), first time:
+
+    pip install virtualenv
+    pip install virtualenvwrapper
+    export WORKON_HOME=~/Envs
+    source /usr/local/bin/virtualenvwrapper.sh
+    mkvirtualenv racion
+    workon racion
+
+Otherwise:
+
+    workon racion
+
+## Dependencies
+
+* [Requests](http://docs.python-requests.org/en/master/)
+* [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/)
+* [html5lib](https://github.com/html5lib/html5lib-python)
