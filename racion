@@ -11,6 +11,7 @@ import re
 import requests
 import string
 import sys
+import signal
 
 class Episode:
     pattern = re.compile(
@@ -101,6 +102,11 @@ def video_url(video_page_url, cookies):
     link = soup.find("a", class_="mepr-aws-link").get("href")
 
     return link
+
+def signal_handler(signal, frame):
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
