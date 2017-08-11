@@ -27,6 +27,10 @@ Download videos with `curl`:
 
     ./racion --videourls 400 410 | ./mk_curl_config | curl -K-
 
+Download videos on remote machine with `curl`:
+
+    ./racion --videourls 400 410 | ./mk_curl_config | ssh myserver '(cd /some/dir ; curl -K-)'
+
 Print the episode titles:
 
     ./racion 400 410
