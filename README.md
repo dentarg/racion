@@ -23,15 +23,15 @@ Print the video URLs:
 
     ./racion --videourls 400 410
 
-Download videos with `curl`:
+Download video 400 to 410 with `curl`:
 
     ./racion --videourls 400 410 | ./mk_curl_config | curl -K-
 
-Download videos on remote machine with `curl`:
+Download video 400 to 410 on remote machine with `curl`:
 
     ./racion --videourls 400 410 | ./mk_curl_config | ssh myserver '(cd /some/dir ; curl -K-)'
 
-Print the episode titles:
+Print the episode titles for video 400 to 410:
 
     ./racion 400 410
 
