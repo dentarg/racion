@@ -27,13 +27,12 @@ class Episode:
 
 class EpisodeList:
     def __init__(self, urls):
-        episode_urls = filter(lambda url:
-            re.match(Episode.pattern, url), urls)
-        self.episodes = map(lambda url: Episode(url), episode_urls)
+        episode_urls = [url for url in urls if re.match(Episode.pattern, url)]
+        self.episodes = [Episode(url) for url in episode_urls]
 
     def filter(self, ep_start, ep_end):
-        ep_range = range(ep_start, ep_end + 1)
-        return filter(lambda ep: ep.number in ep_range, self.episodes)
+        ep_range = list(range(ep_start, ep_end + 1))
+        return [ep for ep in self.episodes if ep.number in ep_range]
 
     def max(self):
         return len(self.episodes)
@@ -61,12 +60,12 @@ def fetch_html_soup(url, cookies={}):
 def episode_urls():
     video_list_url = "https://www.rubytapas.com/episode-list/"
     soup = fetch_html_soup(video_list_url)
-    urls = map(lambda a: a.get("href"), soup.find_all("a"))
+    urls = [a.get("href") for a in soup.find_all("a")]
 
     return urls
 
 def randomword(length):
-   return "".join(random.choice(string.lowercase) for i in range(length))
+   return "".join(random.choice(string.ascii_lowercase) for i in range(length))
 
 def login(username, password):
     login_url = "https://www.rubytapas.com/login/"
@@ -140,6 +139,6 @@ if __name__ == "__main__":
 
     for episode in episode_list.filter(args.start, end):
         if args.videourls:
-            print video_url(episode.video_page_url, cookies)
+            print(video_url(episode.video_page_url, cookies))
         else:
-            print "%s: %s" % (episode.number, episode.title)
+            print("%s: %s" % (episode.number, episode.title))
