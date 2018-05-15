@@ -14,25 +14,17 @@ import sys
 import signal
 
 class Episode:
-    pattern = re.compile(
-        "http.*\/episode-(?P<number>\d{3,})[-\/](?P<title>[^\/]*)")
-
-    def __init__(self, video_page_url):
-        match = re.match(self.pattern, video_page_url)
-
-        if match:
-            self.number = int(match.group("number"))
-            self.title = match.group("title")
-            self.video_page_url = video_page_url
+    def __init__(self, link):
+        self.title = link.text
+        self.video_page_url = link.get("href")
 
 class EpisodeList:
-    def __init__(self, urls):
-        episode_urls = [url for url in urls if re.match(Episode.pattern, url)]
-        self.episodes = [Episode(url) for url in episode_urls]
+    def __init__(self, links):
+        self.episodes = [Episode(link) for link in links]
 
     def filter(self, ep_start, ep_end):
-        ep_range = list(range(ep_start, ep_end + 1))
-        return [ep for ep in self.episodes if ep.number in ep_range]
+        ep_start = ep_start - 1
+        return self.episodes[ep_start:ep_end]
 
     def max(self):
         return len(self.episodes)
@@ -57,12 +49,12 @@ def fetch_html_soup(url, cookies={}):
     return BeautifulSoup(response.content, "html5lib",
         from_encoding=possible_encoding)
 
-def episode_urls():
+def all_links():
     video_list_url = "https://www.rubytapas.com/episode-list/"
     soup = fetch_html_soup(video_list_url)
-    urls = [a.get("href") for a in soup.find_all("a")]
+    links = soup.find("ul", class_="su-posts").find_all("a")
 
-    return urls
+    return links
 
 def randomword(length):
    return "".join(random.choice(string.ascii_lowercase) for i in range(length))
@@ -114,6 +106,8 @@ if __name__ == "__main__":
         help="upto and including this episode (0 = latest episode)", type=int)
     parser.add_argument("--videourls", help="list video URLs for episodes",
         action="store_true")
+    parser.add_argument("--episodeurls", help="list the URL for each episode",
+        action="store_true")
     parser.add_argument("--log", help="log level", default="INFO")
     args = parser.parse_args()
 
@@ -129,8 +123,8 @@ if __name__ == "__main__":
 
     cookies = login(username, password).cookies
 
-    episode_urls = episode_urls()
-    episode_list = EpisodeList(episode_urls)
+    all_links = all_links()
+    episode_list = EpisodeList(all_links)
 
     if args.end == 0:
         end = episode_list.max()
@@ -140,5 +134,7 @@ if __name__ == "__main__":
     for episode in episode_list.filter(args.start, end):
         if args.videourls:
             print(video_url(episode.video_page_url, cookies))
+        elif args.episodeurls:
+            print(episode.video_page_url)
         else:
-            print("%s: %s" % (episode.number, episode.title))
+            print(episode.title)
