@@ -52,7 +52,7 @@ def fetch_html_soup(url, cookies={}):
 def all_links():
     video_list_url = "https://www.rubytapas.com/episode-list/"
     soup = fetch_html_soup(video_list_url)
-    links = soup.find("ul", class_="su-posts").find_all("a")
+    links = soup.find("div", class_="post-list").find_all("a")
 
     return links
 
@@ -90,9 +90,10 @@ def login(username, password):
 
 def video_url(video_page_url, cookies):
     soup = fetch_html_soup(video_page_url, cookies)
-    link = soup.find("a", class_="mepr-aws-link").get("href")
+    link_element = soup.find("a", class_="mepr-aws-link") \
+        or soup.find("a", class_="episode-download-link")
 
-    return link
+    return link_element.get("href")
 
 def signal_handler(signal, frame):
     sys.exit(0)
