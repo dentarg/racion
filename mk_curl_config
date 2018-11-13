@@ -3,6 +3,26 @@
 require "uri"
 
 STDIN.each do |line|
+  uri = URI.parse(line)
+  filename = nil
+
+  case uri.hostname
+  when "rubytapas-media.s3.amazonaws.com"
+    filename = uri
+      .path[1..-1]
+  when "embed-ssl.wistia.com"
+    filename = uri
+      .query
+      .split("&")
+      .sort[1]
+      .split("=")
+      .last
+      .sub(/^rubytapas-/, "")
+      .sub(/^\d+-episode-/, "")
+  else
+    raise "Unknown hostname, don't know how to find filename in URL."
+  end
+
   puts "url = \"#{line.chomp}\""
-  puts "output = \"#{URI.parse(line).path[1..-1]}\""
+  puts "output = \"#{filename}\""
 end
