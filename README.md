@@ -4,9 +4,13 @@ Python script to list the video URL for [Ruby Tapas](https://www.rubytapas.com/)
 
 ## Prerequisites
 
+[Pipenv](https://github.com/pypa/pipenv) is used.
+
+    brew install pipenv
+
 Install all dependencies with:
 
-    pip install -r requirements.txt
+    pipenv install
 
 `ENV` values required:
 
@@ -21,49 +25,28 @@ Give the script the range of episodes you are interested in.
 
 Print the video URLs:
 
-    ./racion --videourls 400 410
+    pipenv run ./racion --videourls 400 410
 
 Download video 400 to 410 with `curl`:
 
-    ./racion --videourls 400 410 | ./mk_curl_config | curl -K-
+    pipenv run ./racion --videourls 400 410 | ./mk_curl_config | curl -K-
 
 Download video 400 to 410 on remote machine with `curl`:
 
-    ./racion --videourls 400 410 | ./mk_curl_config | ssh myserver '(cd /some/dir ; curl -K-)'
+    pipenv run ./racion --videourls 400 410 | ./mk_curl_config | ssh myserver '(cd /some/dir ; curl -K-)'
 
 Print the episode titles for video 400 to 410:
 
-    ./racion 400 410
+    pipenv run ./racion 400 410
 
 If end of range is `0`, all available episodes from given start number is displayed:
 
-    ./racion 460 0
+    pipenv run ./racion 460 0
 
 Enable debug logging:
 
-    ./racion --log=DEBUG 400 410
+    pipenv run ./racion --log=DEBUG 400 410
 
 See the help:
 
-    ./racion -h
-
-## Development
-
-[Setup](http://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/), first time:
-
-    pip install virtualenv
-    pip install virtualenvwrapper
-    export WORKON_HOME=~/Envs
-    source /usr/local/bin/virtualenvwrapper.sh
-    mkvirtualenv racion
-    workon racion
-
-Otherwise:
-
-    workon racion
-
-## Dependencies
-
-* [Requests](http://docs.python-requests.org/en/master/)
-* [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/)
-* [html5lib](https://github.com/html5lib/html5lib-python)
+    pipenv run ./racion -h
