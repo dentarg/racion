@@ -10,7 +10,7 @@ Python script to list the video URL for [Ruby Tapas](https://www.rubytapas.com/)
 
 Install all dependencies with:
 
-    pipenv install
+    pipenv sync
 
 `ENV` values required:
 
