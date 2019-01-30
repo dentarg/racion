@@ -5,14 +5,13 @@ require "uri"
 STDIN.each do |line|
   url = line.split.last
   uri = URI.parse(url)
-  filename = nil
 
-  case uri.hostname
+  filename = case uri.hostname
   when "rubytapas-media.s3.amazonaws.com"
-    filename = uri
+    uri
       .path[1..-1]
   when "embed-ssl.wistia.com"
-    filename = uri
+    uri
       .query
       .split("&")
       .sort[1]
