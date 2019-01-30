@@ -3,7 +3,8 @@
 require "uri"
 
 STDIN.each do |line|
-  uri = URI.parse(line)
+  url = line.split.last
+  uri = URI.parse(url)
   filename = nil
 
   case uri.hostname
@@ -23,6 +24,6 @@ STDIN.each do |line|
     raise "Unknown hostname, don't know how to find filename in URL."
   end
 
-  puts "url = \"#{line.chomp}\""
+  puts "url = \"#{url.chomp}\""
   puts "output = \"#{filename}\""
 end
