@@ -91,7 +91,8 @@ def login(username, password):
 def video_url(video_page_url, cookies):
     soup = fetch_html_soup(video_page_url, cookies)
     link_element = soup.find("a", class_="mepr-aws-link") \
-        or soup.find("a", class_="episode-download-link")
+        or soup.find("a", class_="episode-download-link") \
+        or soup.select_one("div.video-action-wrapper > ul > li:nth-of-type(1) > a")
 
     return link_element.get("href")
 
