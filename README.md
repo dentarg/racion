@@ -12,6 +12,12 @@ Install all dependencies with:
 
     pipenv sync
 
+Very often, I need to reinstall pipenv, rebuild the virtual environment and then sync:
+
+    brew reinstall pipenv
+    pipenv --rm
+    pipenv sync
+
 `ENV` values required:
 
 ```
