@@ -3,6 +3,7 @@
 # coding: utf-8
 
 from bs4 import BeautifulSoup
+from requests_html import HTMLSession
 import argparse
 import logging
 import os
@@ -36,6 +37,13 @@ def get_request(url, cookies={}):
 
     return response
 
+def get_request_with_javascript_evaluated(url):
+    session = HTMLSession()
+    response = session.get(url)
+    response.html.render()
+
+    return response
+
 def fetch_html_soup(url, cookies={}):
     response = get_request(url, cookies)
 
@@ -62,7 +70,10 @@ def randomword(length):
 def login(username, password):
     login_url = "https://www.rubytapas.com/login/"
 
-    get_request(login_url)
+    html = get_request_with_javascript_evaluated(login_url).html
+
+    meprmat_quiz = solve_quiz(html)
+    meprmath_data = extract_meprmath_data(html)
 
     headers = {
         "Referer": login_url,
@@ -71,6 +82,8 @@ def login(username, password):
     payload = {
         "log": username,
         "pwd": password,
+        "meprmath_quiz": meprmat_quiz,
+        "meprmath_data": meprmath_data,
         "rememberme": "forever",
         "wp-submit": "Log In",
         "redirect_to": "https://www.rubytapas.com",
@@ -87,6 +100,16 @@ def login(username, password):
     logging.debug("%s POST %s", login_response.status_code, login_url)
 
     return login_response
+
+def solve_quiz(html):
+    quiz_pattern = re.compile("^(?P<first>\\d+) \\+ (?P<second>\\d+) equals\\?$")
+    quiz = html.find("label[for=meprmath_quiz] > span", first=True).text
+    match = quiz_pattern.search(quiz)
+
+    return int(match["first"]) + int(match["second"])
+
+def extract_meprmath_data(html):
+    return html.find("input[name=meprmath_data]", first=True).attrs["value"]
 
 def video_url(video_page_url, cookies):
     soup = fetch_html_soup(video_page_url, cookies)

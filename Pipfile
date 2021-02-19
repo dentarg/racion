@@ -11,6 +11,7 @@ beautifulsoup4 = "*"
 html5lib = "*"
 pyparsing = "*"
 requests = "*"
+requests_html = "*"
 six = "*"
 webencodings = "*"
 
